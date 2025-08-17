@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 import streamlit as st
-from src.data.loaders import load_demo_news, load_demo_prices
+from src.data.data_preparation import load_demo_news, load_demo_prices
 from src.features.sentiment import score_headlines_vader, aggregate_daily_sentiment
 from src.modeling.correlation import daily_returns, merge_sentiment_returns, compute_correlations
 from src.features.technical import add_basic_indicators

@@ -1,41 +1,35 @@
-from __future__ import annotations
-import pandas as pd
-import typer
-from src.utils.logging_utils import get_logger
-from src.data.loaders import load_demo_news, load_demo_prices
-from src.features.sentiment import score_headlines_vader, aggregate_daily_sentiment
-from src.features.technical import add_basic_indicators
-from src.modeling.correlation import daily_returns, merge_sentiment_returns, compute_correlations
+import sys
+import os
 
-app = typer.Typer(add_completion=False)
-log = get_logger()
+# Add the project root directory to the path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-@app.command()
-def demo():
-    log.info("Loading synthetic demo data...\n")
-    news = load_demo_news(90)
-    prices = load_demo_prices(90)
+# Import modules
+from data.data_preparation import load_news_data, load_stock_data, explore_news_data, explore_stock_data
+from data.cleaning import clean_news_data, align_news_to_stock, save_processed_data
 
-    log.info("Scoring sentiment...\n")
-    news_scored = score_headlines_vader(news)
-    daily_sent = aggregate_daily_sentiment(news_scored)
+def main():
+    print("Current working directory:", os.getcwd())
+    
+    news_file = "C:\\Users\\Win 10 Pro\\Documents\\10 Academy\\week-1\\news-sentiment-returns-capstone\\data\\raw\\raw_analyst_ratings.csv"
+    stock_folder = "C:\\Users\\Win 10 Pro\\Documents\\10 Academy\\week-1\\news-sentiment-returns-capstone\\data\\raw\\yfinance_data"
+    processed_folder = "C:\\Users\\Win 10 Pro\\Documents\\10 Academy\\week-1\\news-sentiment-returns-capstone\\data\\processed"
 
-    log.info("Building features...\n")
-    prices_feat = add_basic_indicators(prices)
+    # Load data
+    news_df = load_news_data(news_file)
+    stocks = load_stock_data(stock_folder)
 
-    log.info("Computing returns & correlations...\n")
-    rets = daily_returns(prices_feat)
-    merged = merge_sentiment_returns(daily_sent, rets)
-    cors = compute_correlations(merged)
+    # Step 1: Explore raw data
+    explore_news_data(news_df)
+    explore_stock_data(stocks)
 
-    print("\n=== Correlations (daily returns vs. sentiment, with lags) ===")
-    print(cors.to_string(index=False))
+    # Step 2: Clean news data
+    news_df = clean_news_data(news_df)
 
-    out_path = "artifacts/demo_correlations.csv"
-    import os
-    os.makedirs("artifacts", exist_ok=True)
-    cors.to_csv(out_path, index=False)
-    print(f"\nSaved: {out_path}")
+    # Step 2: Align news to stock trading dates and save processed datasets
+    for symbol, stock_df in stocks.items():
+        aligned_news = align_news_to_stock(news_df, stock_df, symbol)
+        save_processed_data(aligned_news, os.path.join(processed_folder, f"{symbol}_news.csv"))
 
 if __name__ == "__main__":
-    app()
+    main()
