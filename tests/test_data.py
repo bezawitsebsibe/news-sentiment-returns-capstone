@@ -39,12 +39,20 @@ def test_load_stock_data(sample_stock):
     stocks = load_stock_data(sample_stock)
     assert "AAPL" in stocks
     assert "Close" in stocks["AAPL"].columns
+<<<<<<< HEAD
     assert "date" in stocks["AAPL"].reset_index().columns  
+=======
+    assert "date" in stocks["AAPL"].reset_index().columns  # check date column exists
+>>>>>>> ac7cfe5f940905545dd4332ffd777cfb2eb6f7f6
 
 def test_clean_news_data(sample_news):
     df = load_news_data(sample_news)
     cleaned = clean_news_data(df)
+<<<<<<< HEAD
     assert cleaned["date"].dt.tz is not None  
+=======
+    assert cleaned["date"].dt.tz is not None  # lowercase
+>>>>>>> ac7cfe5f940905545dd4332ffd777cfb2eb6f7f6
 
 def test_align_news_to_stock(sample_news, sample_stock):
     news_df = load_news_data(sample_news)
